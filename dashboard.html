@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Zenith SMP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --blue: #3b82f6;
+      --bg: #050510;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(124, 58, 237, 0.25);
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    canvas#stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; width: 100%;
+      z-index: 50;
+      padding: 1rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(5, 5, 16, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 3px;
+      text-decoration: none;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 0.35rem 0.9rem 0.35rem 0.35rem;
+    }
+
+    .user-chip img {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-chip span {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .btn-logout {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0 0.2rem;
+      transition: color 0.2s;
+    }
+    .btn-logout:hover { color: #f87171; }
+
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: rgba(255,255,255,0.6);
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-home:hover {
+      background: rgba(124,58,237,0.1);
+      color: #a78bfa;
+      border-color: rgba(124,58,237,0.5);
+    }
+
+    /* ── Page wrapper ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 110px 24px 60px;
+    }
+
+    /* ── Welcome header ── */
+    .welcome {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .welcome-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 3px solid #7c3aed;
+      box-shadow: 0 0 20px rgba(124,58,237,0.4);
+      object-fit: cover;
+    }
+
+    .welcome-text h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #e0d7ff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .welcome-text p {
+      color: rgba(255,255,255,0.35);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* ── Cards grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(124,58,237,0.5);
+      box-shadow: 0 8px 32px rgba(124,58,237,0.1);
+    }
+
+    .card-top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #7c3aed, #3b82f6);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card:hover .card-top-bar { opacity: 1; }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e0d7ff;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.5px;
+    }
+
+    .card-value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .card-sub {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 4px;
+    }
+
+    /* Status dot */
+    .status-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .status-dot.offline { background: var(--red); }
+    .status-dot.checking {
+      background: #f59e0b;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Start Server card ── */
+    .card-start {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08));
+      border-color: rgba(124,58,237,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .start-info h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e0d7ff;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .start-info p {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.88rem;
+    }
+
+    .btn-start {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, #7c3aed, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+      white-space: nowrap;
+    }
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(124,58,237,0.6);
+    }
+
+    /* ── Quick actions ── */
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      background: rgba(124,58,237,0.08);
+      border-color: rgba(124,58,237,0.5);
+      color: #a78bfa;
+      transform: translateY(-2px);
+    }
+
+    .action-icon { font-size: 1.8rem; }
+
+    /* ── Not logged in ── */
+    .not-logged-in {
+      display: none;
+      min-height: 80vh;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .not-logged-in h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2rem;
+      color: #e0d7ff;
+    }
+
+    .not-logged-in p {
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .btn-discord-large {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #5865F2;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-discord-large:hover { background: #4752c4; transform: translateY(-1px); }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      .actions-row { grid-template-columns: repeat(3, 1fr); }
+      .welcome { gap: 1rem; }
+      .welcome-avatar { width: 52px; height: 52px; }
+      nav { padding: 0.9rem 1.2rem; }
+      .card-start { flex-direction: column; }
+      .btn-start { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- Nav -->
+<nav>
+  <a href="index.html" class="nav-logo">ZENITH</a>
+  <div class="nav-right">
+    <a href="index.html" class="btn-home">← Home</a>
+    <div class="user-chip" id="user-chip" style="display:none;">
+      <img id="nav-avatar" src="" alt="avatar" />
+      <span id="nav-username">Player</span>
+      <button class="btn-logout" onclick="logout()" title="Logout">✕</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Not logged in state -->
+<div class="page not-logged-in" id="not-logged-in" style="display:flex;">
+  <div style="font-size:3rem">⚡</div>
+  <h2>You're not logged in</h2>
+  <p>Log in with Discord to access your Zenith dashboard.</p>
+  <a href="index.html" class="btn-discord-large">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+    Go to Login
+  </a>
+</div>
+
+<!-- Dashboard -->
+<div class="page" id="dashboard" style="display:none;">
+
+  <!-- Welcome -->
+  <div class="welcome">
+    <img id="welcome-avatar" src="" alt="avatar" class="welcome-avatar" />
+    <div class="welcome-text">
+      <h1 id="welcome-name">Welcome back!</h1>
+      <p>Zenith SMP Dashboard</p>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="grid">
+
+    <!-- Start Server -->
+    <div class="card card-start">
+      <div class="card-top-bar"></div>
+      <div class="start-info">
+        <h2>⚡ Start Server</h2>
+        <p>Boot up Zenith SMP on Falix. Takes about 30 seconds.</p>
+      </div>
+      <a href="https://falixnodes.net/startserver?ip=zenithxd.falix.dev" target="_blank" class="btn-start">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start Server
+      </a>
+    </div>
+
+    <!-- Server Status -->
+    <div class="card" id="status-card">
+      <div class="card-top-bar"></div>
+      <div class="card-label">Server Status</div>
+      <div style="display:flex;align-items:center;margin-bottom:4px;">
+        <span class="status-dot checking" id="status-dot"></span>
+        <span class="card-value" id="status-text" style="font-size:1.6rem;">Checking...</span>
+      </div>
+      <div class="card-sub" id="status-version"></div>
+    </div>
+
+    <!-- Player Count -->
+    <div class="card">
+      <div class="card-top-bar"></div>
+      <div class="card-label">Players Online</div>
+      <div class="card-value" id="player-count">—</div>
+      <div class="card-sub" id="player-max"></div>
+    </div>
+
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="actions-row">
+    <button class="action-btn" onclick="copyIP(this)">
+      <span class="action-icon">📋</span>
+      <span>Copy IP</span>
+    </button>
+    <a href="https://discord.gg/Bmzb75jte9" target="_blank" class="action-btn">
+      <span class="action-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#a78bfa"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      </span>
+      <span>Discord</span>
+    </a>
+    <button class="action-btn" onclick="logout()">
+      <span class="action-icon">🚪</span>
+      <span>Logout</span>
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ══ Stars ══
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+function initStars() {
+  stars = Array.from({ length: 160 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.3 + 0.2,
+    a: Math.random() * 0.7 + 0.1,
+    speed: Math.random() * 0.3 + 0.05
+  }));
+}
+function drawStars(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.a += Math.sin(t * 0.001 * s.speed) * 0.003;
+    s.a = Math.max(0.05, Math.min(0.85, s.a));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(190,170,255,${s.a})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize', () => { resize(); initStars(); });
+resize(); initStars(); requestAnimationFrame(drawStars);
+
+// ══ Auth ══
+const storedUser = localStorage.getItem('discord_user');
+
+if (!storedUser) {
+  document.getElementById('not-logged-in').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+} else {
+  const user = JSON.parse(storedUser);
+  document.getElementById('not-logged-in').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  const avatarUrl = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+    : `https://cdn.discordapp.com/embed/avatars/${(parseInt(user.discriminator || '0')) % 5}.png`;
+
+  const displayName = user.global_name || user.username;
+
+  // Welcome header
+  document.getElementById('welcome-avatar').src = avatarUrl;
+  document.getElementById('welcome-name').textContent = `Welcome, ${displayName}`;
+
+  // Nav chip
+  document.getElementById('nav-chip').style.display = 'flex';
+  document.getElementById('nav-avatar').src = avatarUrl;
+  document.getElementById('nav-username').textContent = displayName;
+
+  // Fetch server status
+  fetchServerStatus();
+}
+
+function logout() {
+  localStorage.removeItem('discord_user');
+  localStorage.removeItem('discord_token');
+  window.location.href = 'index.html';
+}
+
+// ══ Server Status ══
+async function fetchServerStatus() {
+  try {
+    const res = await fetch('https://api.mcsrvstat.us/3/zenithxd.falix.dev');
+    const data = await res.json();
+    const dot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const playerCount = document.getElementById('player-count');
+    const playerMax = document.getElementById('player-max');
+    const version = document.getElementById('status-version');
+
+    dot.classList.remove('checking');
+
+    if (data.online) {
+      dot.classList.add('online');
+      statusText.textContent = 'Online';
+      statusText.style.color = '#22c55e';
+      playerCount.textContent = data.players?.online ?? '0';
+      playerCount.style.color = '#a78bfa';
+      playerMax.textContent = `of ${data.players?.max ?? '?'} max`;
+      version.textContent = data.version ?? '';
+    } else {
+      dot.classList.add('offline');
+      statusText.textContent = 'Offline';
+      statusText.style.color = '#ef4444';
+      playerCount.textContent = '0';
+      playerMax.textContent = 'Server is offline';
+    }
+  } catch {
+    document.getElementById('status-text').textContent = 'Unknown';
+    document.getElementById('status-dot').classList.remove('checking');
+  }
+}
+
+// ══ Copy IP ══
+function copyIP(btn) {
+  navigator.clipboard.writeText('zenithxd.falix.dev').then(() => {
+    const label = btn.querySelector('span:last-child');
+    label.textContent = 'Copied!';
+    btn.style.color = '#22c55e';
+    setTimeout(() => { label.textContent = 'Copy IP'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

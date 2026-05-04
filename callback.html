@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging in... – Zenith SMP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #050510;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .box {
+            text-align: center;
+        }
+        .logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+        }
+        .spinner {
+            width: 44px; height: 44px;
+            border: 3px solid rgba(124, 58, 237, 0.15);
+            border-top-color: #7c3aed;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.6rem;
+            color: #a78bfa;
+            margin-bottom: 0.4rem;
+        }
+        p {
+            color: rgba(255,255,255,0.35);
+            font-size: 0.9rem;
+        }
+        .error {
+            color: #f87171;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="logo">ZENITH</div>
+    <div class="spinner"></div>
+    <h2>Logging you in...</h2>
+    <p>Hang tight, fetching your Discord profile.</p>
+    <p class="error" id="err">Something went wrong. Redirecting...</p>
+</div>
+<script>
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const token = params.get('access_token');
+
+    if (token) {
+        fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(user => {
+            localStorage.setItem('discord_user', JSON.stringify(user));
+            localStorage.setItem('discord_token', token);
+            window.location.href = 'dashboard.html';
+        })
+        .catch(() => {
+            document.getElementById('err').style.display = 'block';
+            setTimeout(() => { window.location.href = '/'; }, 2000);
+        });
+    } else {
+        document.getElementById('err').style.display = 'block';
+        setTimeout(() => { window.location.href = '/'; }, 2000);
+    }
+</script>
+</body>
+</html>

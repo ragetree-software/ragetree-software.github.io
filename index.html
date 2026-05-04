@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith SMP – CrystalMulti</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple: #7c3aed;
+            --blue: #3b82f6;
+            --glow: rgba(124, 58, 237, 0.5);
+            --bg: #050510;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(124, 58, 237, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        canvas#stars {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            z-index: 50;
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 5, 16, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover { color: #a78bfa; }
+
+        .btn-discord-nav {
+            background: #5865F2 !important;
+            color: #fff !important;
+            padding: 0.5rem 1.2rem !important;
+            border-radius: 8px;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.2s, transform 0.15s !important;
+        }
+
+        .btn-discord-nav:hover {
+            background: #4752c4 !important;
+            transform: translateY(-1px);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid var(--border);
+            color: #a78bfa;
+            padding: 0.4rem 1.1rem;
+            border-radius: 99px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(5rem, 14vw, 10rem);
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #e0d7ff 0%, #a78bfa 45%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 60px rgba(124, 58, 237, 0.5));
+            margin-bottom: 0.75rem;
+        }
+
+        .hero-sub {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 3rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* IP Box */
+        .ip-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .ip-box:hover { border-color: rgba(124,58,237,0.6); }
+
+        .ip-label {
+            padding: 0.85rem 1.1rem;
+            background: rgba(124, 58, 237, 0.18);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #a78bfa;
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .ip-value {
+            padding: 0.85rem 1.3rem;
+            font-family: 'Rajdhani', monospace;
+            font-size: 1.15rem;
+            color: #e0d7ff;
+            letter-spacing: 1px;
+        }
+
+        .ip-copy {
+            padding: 0.85rem 1.1rem;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.35);
+            cursor: pointer;
+            transition: color 0.2s;
+            border-left: 1px solid var(--border);
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .ip-copy:hover { color: #a78bfa; }
+        .ip-copy.copied { color: #4ade80; }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 0.85rem 2rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            color: #fff;
+            box-shadow: 0 4px 24px rgba(124, 58, 237, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 36px rgba(124, 58, 237, 0.55);
+        }
+
+        .btn-discord {
+            background: #5865F2;
+            color: #fff;
+            box-shadow: 0 4px 24px rgba(88, 101, 242, 0.35);
+        }
+
+        .btn-discord:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(88, 101, 242, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: rgba(255,255,255,0.75);
+        }
+
+        .btn-outline:hover {
+            background: rgba(124, 58, 237, 0.1);
+            border-color: #7c3aed;
+            transform: translateY(-2px);
+        }
+
+        /* ── Sections ── */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 7rem 2rem;
+        }
+
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-tag {
+            display: inline-block;
+            color: #a78bfa;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0d7ff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .section-desc {
+            color: rgba(255,255,255,0.45);
+            font-size: 1.05rem;
+            max-width: 580px;
+            line-height: 1.75;
+            margin-bottom: 3.5rem;
+        }
+
+        /* ── Feature Cards ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #7c3aed, #3b82f6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(124, 58, 237, 0.55);
+            background: rgba(124, 58, 237, 0.07);
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(124, 58, 237, 0.12);
+        }
+
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon {
+            font-size: 2.4rem;
+            margin-bottom: 1.1rem;
+            display: block;
+        }
+
+        .feature-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #e0d7ff;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-desc {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        /* ── Discord CTA ── */
+        .discord-section {
+            background: rgba(88, 101, 242, 0.05);
+            border-top: 1px solid rgba(88, 101, 242, 0.18);
+            border-bottom: 1px solid rgba(88, 101, 242, 0.18);
+        }
+
+        .discord-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .discord-inner .section-desc {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 10, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: #0d0d22;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 2.5rem 2.5rem 2rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.93) translateY(12px);
+            transition: transform 0.25s;
+            position: relative;
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1.1rem;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 1.6rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover { color: #fff; }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .modal h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e0d7ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .modal-desc {
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 1.8rem;
+            font-size: 0.93rem;
+            line-height: 1.6;
+        }
+
+        .modal-fine {
+            margin-top: 1rem;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.25);
+            margin-bottom: 0;
+        }
+
+        /* User in nav */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .user-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 2px solid #a78bfa;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 0.2rem;
+            transition: color 0.2s;
+        }
+
+        .logout-btn:hover { color: #f87171; }
+
+        /* ── Glow divider ── */
+        .glow-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #7c3aed 30%, #3b82f6 70%, transparent);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Footer ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.82rem;
+        }
+
+        /* ── Scroll fade ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            nav { padding: 0.9rem 1.2rem; }
+            .nav-links { gap: 1rem; }
+            .nav-links li:nth-child(1),
+            .nav-links li:nth-child(2) { display: none; }
+            footer { flex-direction: column; gap: 0.75rem; text-align: center; }
+            section { padding: 5rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- ══ Navbar ══ -->
+<nav>
+    <a href="#" class="nav-logo">ZENITH</a>
+    <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#join">Community</a></li>
+        <li>
+            <a href="https://discord.gg/Bmzb75jte9" target="_blank" class="btn-discord-nav">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                Discord
+            </a>
+        </li>
+        <li id="nav-user-area">
+            <button class="btn btn-outline" style="padding:0.45rem 1.1rem;font-size:0.85rem;" onclick="openLogin()">Login</button>
+        </li>
+    </ul>
+</nav>
+
+<!-- ══ Hero ══ -->
+<section class="hero">
+    <div class="hero-badge">✦ Minecraft Survival Multiplayer</div>
+    <h1>ZENITH</h1>
+    <p class="hero-sub">CrystalMulti Network &nbsp;•&nbsp; Zenith SMP</p>
+
+    <div class="ip-box">
+        <span class="ip-label">Server IP</span>
+        <span class="ip-value">zenithxd.falix.dev</span>
+        <button class="ip-copy" id="copy-btn" onclick="copyIP()" title="Copy IP">📋</button>
+    </div>
+
+    <div class="hero-btns">
+        <button class="btn btn-primary" onclick="openLogin()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            Login with Discord
+        </button>
+        <a href="https://discord.gg/Bmzb75jte9" target="_blank" class="btn btn-discord">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            Join Discord
+        </a>
+        <a href="#features" class="btn btn-outline">View Features</a>
+    </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- ══ Features ══ -->
+<section id="features">
+    <div class="section-inner">
+        <span class="section-tag fade-in">What we offer</span>
+        <h2 class="section-title fade-in">Built for the community</h2>
+        <p class="section-desc fade-in">Zenith SMP is a survival experience designed around progression, economy, and community — with features that keep the world alive every season.</p>
+
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🏡</span>
+                <div class="feature-name">Land Claiming</div>
+                <div class="feature-desc">Protect your builds and territory. Claim your land to keep your creations safe from griefers and intruders.</div>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🌿</span>
+                <div class="feature-name">Seasons</div>
+                <div class="feature-desc">The world evolves. Each season brings fresh challenges, new starts, and the chance to rise to the top again.</div>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">💰</span>
+                <div class="feature-name">Economy</div>
+                <div class="feature-desc">Earn, trade, and grow your wealth. A fully fledged in-game economy lets you build your own empire.</div>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🏪</span>
+                <div class="feature-name">Player Shop</div>
+                <div class="feature-desc">Buy and sell in a dynamic player-driven marketplace. Set up your own shop and turn your resources into profit.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- ══ Discord CTA ══ -->
+<section id="join" class="discord-section">
+    <div class="discord-inner">
+        <span class="section-tag fade-in">Community</span>
+        <h2 class="section-title fade-in">Join the server</h2>
+        <p class="section-desc fade-in">Connect with the Zenith SMP community on Discord. Get updates, find teammates, and stay in the loop on every new season.</p>
+        <div class="fade-in" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="https://discord.gg/Bmzb75jte9" target="_blank" class="btn btn-discord" style="font-size:1rem;padding:1rem 2.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                Join Discord
+            </a>
+            <button class="btn btn-outline" style="font-size:1rem;padding:1rem 2.5rem;" onclick="copyIP()">
+                📋 Copy Server IP
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ══ Footer ══ -->
+<footer>
+    <span>© 2025 CrystalMulti – Zenith SMP</span>
+    <span>Not affiliated with Mojang or Microsoft</span>
+</footer>
+
+<!-- ══ Login Modal ══ -->
+<div class="modal-overlay" id="modal" onclick="closeLoginOutside(event)">
+    <div class="modal">
+        <button class="modal-close" onclick="closeLogin()">×</button>
+        <span class="modal-icon">⚡</span>
+        <h2>Login with Discord</h2>
+        <p class="modal-desc">Connect your Discord account to access exclusive features on Zenith SMP.</p>
+        <a href="#" id="discord-oauth-btn" class="btn btn-discord" style="width:100%;justify-content:center;font-size:1rem;padding:1rem 1.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.112 18.1.13 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            Continue with Discord
+        </a>
+        <p class="modal-fine">By logging in you agree to our server rules.</p>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG — paste your Discord Client ID below
+// ═══════════════════════════════════════════════
+const DISCORD_CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+const REDIRECT_URI = encodeURIComponent('https://crystalmulti.github.io/callback');
+const OAUTH_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=identify`;
+
+document.getElementById('discord-oauth-btn').href = OAUTH_URL;
+
+// ═══════════════════════════════════════════════
+// Animated Starfield
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+function initStars() {
+    stars = Array.from({ length: 220 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random() * 0.8 + 0.1,
+        speed: Math.random() * 0.4 + 0.05,
+        drift: (Math.random() - 0.5) * 0.015
+    }));
+}
+
+function drawStars(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+        s.a += Math.sin(t * 0.001 * s.speed) * 0.004;
+        s.a = Math.max(0.05, Math.min(0.9, s.a));
+        s.x += s.drift;
+        if (s.x < 0) s.x = canvas.width;
+        if (s.x > canvas.width) s.x = 0;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(190, 170, 255, ${s.a})`;
+        ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+}
+
+window.addEventListener('resize', () => { resize(); initStars(); });
+resize(); initStars();
+requestAnimationFrame(drawStars);
+
+// ═══════════════════════════════════════════════
+// Copy IP
+// ═══════════════════════════════════════════════
+function copyIP() {
+    navigator.clipboard.writeText('zenithxd.falix.dev').then(() => {
+        const btn = document.getElementById('copy-btn');
+        if (btn) {
+            btn.textContent = '✓';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '📋';
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════
+// Modal
+// ═══════════════════════════════════════════════
+function openLogin() {
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLogin() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function closeLoginOutside(e) {
+    if (e.target === document.getElementById('modal')) closeLogin();
+}
+
+// ═══════════════════════════════════════════════
+// Scroll fade-in
+// ═══════════════════════════════════════════════
+const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+            setTimeout(() => e.target.classList.add('visible'), i * 80);
+        }
+    });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ═══════════════════════════════════════════════
+// Check for existing Discord session
+// ═══════════════════════════════════════════════
+const storedUser = localStorage.getItem('discord_user');
+if (storedUser) {
+    try {
+        showUserInNav(JSON.parse(storedUser));
+    } catch(e) { localStorage.removeItem('discord_user'); }
+}
+
+function showUserInNav(user) {
+    const area = document.getElementById('nav-user-area');
+    const avatarUrl = user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        : `https://cdn.discordapp.com/embed/avatars/${(parseInt(user.discriminator) || 0) % 5}.png`;
+    area.innerHTML = `
+        <div class="user-info">
+            <img src="${avatarUrl}" class="user-avatar" alt="avatar">
+            <span>${user.global_name || user.username}</span>
+            <button class="logout-btn" onclick="logout()" title="Logout">✕</button>
+        </div>`;
+}
+
+function logout() {
+    localStorage.removeItem('discord_user');
+    localStorage.removeItem('discord_token');
+    location.reload();
+}
+</script>
+</body>
+</html>
